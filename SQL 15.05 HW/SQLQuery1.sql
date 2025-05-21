@@ -88,15 +88,37 @@ ON TeacherManipulations
 AFTER INSERT
 AS
 BEGIN 
-	INSERT INTO TeacherAddedInfos (EmploymentDate, Name, Salary, Surname, ManipulationId) 
-	SELECT 'TeacherAddedInfos_'+ CONVERT(date,INSERTED.Id), CONVERT(nvarchar(max),INSERTED.Id), 
-	CONVERT(money,INSERTED.Id), CONVERT(nvarchar(max),INSERTED.Id), INSERTED.Id FROM INSERTED;
+DECLARE @TeacherId INT;
+SET @TeacherId = (SELECT INSERTED.TeacherId FROM INSERTED); 
+DECLARE @ManipulationId INT;
+SET @ManipulationId = (SELECT INSERTED.Id FROM INSERTED); 
+DECLARE @EmplDate DATE;
+SET @EmplDate = (SELECT EmploymentDate FROM Teachers WHERE Id =  @TeacherId);
+DECLARE @Name NVARCHAR(MAX);
+SET @Name = (SELECT Name FROM Teachers WHERE Id =  @TeacherId);
+DECLARE @Salary MONEY;
+SET @Salary = (SELECT Salary FROM Teachers WHERE Id =  @TeacherId);
+DECLARE @Surname NVARCHAR(MAX);
+SET @Surname = (SELECT Surname FROM Teachers WHERE Id =  @TeacherId);
+    INSERT INTO TeacherAddedInfos (EmploymentDate, Name, Salary, Surname, ManipulationId) 
+    VALUES(@EmplDate, @Name, @Salary, @Surname, @ManipulationId);
 	INSERT INTO TeacherDeletedInfos (EmploymentDate, Name, Salary, Surname, ManipulationId) 
-	SELECT 'TeacherDeletedInfos_'+ CONVERT(date,INSERTED.Id), CONVERT(nvarchar(max),INSERTED.Id), 
-	CONVERT(money,INSERTED.Id), CONVERT(nvarchar(max),INSERTED.Id), INSERTED.Id FROM INSERTED;
+    VALUES(@EmplDate, @Name, @Salary, @Surname, @ManipulationId);
 END;
 
 INSERT INTO TeacherManipulations(Date, ActionId, TeacherId)
 VALUES  ('2008-02-08', 1, 1),
     ('2023-07-23', 2, 2),
     ('2024-06-21', 3, 3);
+
+INSERT INTO TeacherAddedInfos (EmploymentDate, Name, Salary, Surname, ManipulationId)
+VALUES 
+    ('2010-09-01', N'Misha', 5100.00, N'Doe', 1),
+    ('2015-03-15', N'Alex', 6300.00, N'Fra', 2),
+    ('2020-01-10', N'Lexa', 7200.00, N'Johnson', 3);
+
+INSERT INTO TeacherDeletedInfos (EmploymentDate, Name, Salary, Surname, ManipulationId)
+VALUES 
+    ('2008-05-21', N'Lora', 4800.00, N'White', 1),
+    ('2012-11-30', N'Andrew', 5300.00, N'Brown', 2),
+    ('2017-08-18', N'Ilia', 6000.00, N'Clark', 3);
